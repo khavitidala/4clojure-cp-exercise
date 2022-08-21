@@ -9,7 +9,7 @@
   (let [res '()]
     (for [i (range 1 (+ y 1))]
       (flatten (cons res (for [j (take (quot (count x) y) (iterate (partial + y) i))]
-        (nth x (dec j))))))))
+                           (nth x (dec j))))))))
 ;; solution 2
 #(apply map list (partition %2 %1))
 ;; ==============
@@ -19,9 +19,9 @@
 (fn [x y]
   (let [len (count y)
         z (rem x len)]
-   (flatten (if (neg? z)
-    (cons (take-last (* -1 z) y) (take (+ (count y) z) y))
-    (cons (take-last (- (count y) z) y) (take z y))))))
+    (flatten (if (neg? z)
+               (cons (take-last (* -1 z) y) (take (+ (count y) z) y))
+               (cons (take-last (- (count y) z) y) (take z y))))))
 ;; solution 2
 (fn [n l]
   (->> (split-at (mod n (count l)) l)
@@ -98,7 +98,7 @@
 (fn [sets]
   (= (reduce + (map count sets))
      (count #_{:clj-kondo/ignore [:unresolved-namespace]}
-            (reduce clojure.set/union sets))))
+      (reduce clojure.set/union sets))))
 ;; ==============
 ;; > Beauty is Symmetry
 ;;   problem/96
@@ -111,7 +111,7 @@
         left (second y)
         right (last y)
         valid (not (or (nil? left) (nil? right)))]
-    (if valid 
+    (if valid
       (or (= (get-tree left) (reverse (get-tree right)))
           (= left right))
       false)))
@@ -125,4 +125,43 @@
   (->> (group-by identity x)
        (map (fn [k] [(key k) (count (val k))]))
        (into {})))
+;; ==============
+;;
+;; 19 Aug 22
+;;
+;; ==============
+;; > Find Distinct Items
+;;   Special Restrictions
+;;   distinct
+;;   problem/56
+;; solution 1
+(fn [x]
+  (let [result (fn res [y z]
+                 (if (empty? y) 
+                   z 
+                   (if (true? (some #(= (first y) %) z)) 
+                     (res (rest y) z)
+                     (res (rest y) (conj z (first y))))))]
+    (result x [])))
+;; solution 2
+(fn [x] (reduce #(if ((set %1) %2) %1 (conj %1 %2)) [] x))
+;; ==============
+;; > Prime Numbers
+;;   problem/67
+;; solution 1
+(fn [x]
+  (take x 
+        (reduce 
+         (fn [primes number] 
+           (if (some zero? (map (partial mod number) primes)) 
+             primes 
+             (conj primes number))) 
+         [2] 
+         (take (* x x) (iterate inc 3)))))
+;; ==============
+;; > Perfect Numbers
+;;   problem/80
+;; solution 1
+(fn [bil]
+  (true? (some (fn [x] (= x bil)) (map #(apply + (range %)) (range 2 bil)))))
 ;; ==============
