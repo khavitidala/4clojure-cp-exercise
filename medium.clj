@@ -137,9 +137,9 @@
 ;; solution 1
 (fn [x]
   (let [result (fn res [y z]
-                 (if (empty? y) 
-                   z 
-                   (if (true? (some #(= (first y) %) z)) 
+                 (if (empty? y)
+                   z
+                   (if (true? (some #(= (first y) %) z))
                      (res (rest y) z)
                      (res (rest y) (conj z (first y))))))]
     (result x [])))
@@ -149,14 +149,14 @@
 ;; > Prime Numbers
 ;;   problem/67
 ;; solution 1
-(fn [x]
-  (take x 
-        (reduce 
-         (fn [primes number] 
-           (if (some zero? (map (partial mod number) primes)) 
-             primes 
-             (conj primes number))) 
-         [2] 
+(defn genpr [x]
+  (take x
+        (reduce
+         (fn [primes number]
+           (if (some zero? (map (partial mod number) primes))
+             primes
+             (conj primes number)))
+         [2]
          (take (* x x) (iterate inc 3)))))
 ;; ==============
 ;; > Perfect Numbers
@@ -165,3 +165,161 @@
 (fn [bil]
   (true? (some (fn [x] (= x bil)) (map #(apply + (range %)) (range 2 bil)))))
 ;; ==============
+;;
+;; 22 Aug 22
+;;
+;; ==============
+;; > Filter Perfect Squares
+;;   problem/74
+;; solution 1
+(fn [x]
+  (let [lst (->> (clojure.string/split x #",")
+                 (map #(Integer/parseInt %)))]
+    (->> lst
+         (map #(some (fn [x] (= x %)) (map (fn [i] (* i i)) (range %))))
+         (keep-indexed #(if (true? %2) (nth lst %1)))
+         (clojure.string/join ", ")
+         (#(clojure.string/replace % #" " "")))))
+;; ==============
+;; > Juxtaposition
+;;   problem/59
+;;   Special Restrictions
+;;   juxt
+;; solution 1
+(fn [& x]
+  (fn [& j] (map #(apply % j) x)))
+;; ==============
+;; > Word Sorting
+;;   problem/70
+;; solution 1
+(fn [x]
+  (let [cln (clojure.string/split (clojure.string/replace x #"\.+|\!+|\?+|,+" "") #" ")]
+    (->> (map #(.toLowerCase %) cln)
+         (map-indexed (fn [idx itm] [(nth cln idx) itm]))
+         (sort-by last)
+         (map #(first %)))))
+;;solution 2
+#(sort-by clojure.string/lower-case (re-seq #"\w+" %))
+;; ==============
+;; > Anagram Finder
+;;   problem/77
+;; solution 1
+(fn [x]
+  (->> (group-by sort x)
+       vals
+       (map #(into #{} %))
+       (filter #(> (count %) 1))
+       (into #{})))
+;; ==============
+;; > intoCamelCase
+;;   problem/102
+;; solution 1
+(fn [x]
+  (if (nil? (re-find #"-" x))
+    x
+    (->> (clojure.string/split x #"-")
+         ((fn [y]
+            (str (first y) (apply str (map #(apply str (.toUpperCase (str (first %))) (rest %)) (rest y)))))))))
+;; ==============
+;;
+;; 23 Aug 22
+;;
+;; ==============
+;; > Function Composition
+;;   problem/58
+;; solution 1
+(fn
+  ([f g]
+   (fn [& args]
+     (f (apply g args))))
+  ([f g h]
+   (fn [& args]
+     (f (g (apply h args))))))
+;; solution 2
+(fn [& fs] (reduce (fn [f g] #(f (apply g %&))) fs))
+;; ==============
+;;
+;; 24 Aug 22
+;;
+;; ==============
+;; > Euler's Totient Function
+;;   problem/75
+;; solution 1
+(fn [x]
+  (let [gcd (fn fpb [a b]
+              (if (= a 0)
+                b
+                (fpb (rem b a) a)))]
+    (if (= x 1)
+      1
+      (->> (map (fn [j]
+                  (if (= (gcd j x) 1)
+                    j
+                    nil)) (range x))
+           (filter #(not (nil? %)))
+           count))))
+;; ==============
+;; > Happy numbers
+;;   problem/86
+;; solution 1
+(fn [j]
+ (let [hap (fn happy [x y] 
+             (if (= y 100) 
+               x 
+               (happy (->> (str x) 
+                           (map #(Integer/parseInt (str %))) 
+                           (map #(* % %)) 
+                           (apply +)) (inc y))))]
+   (= (hap j 1) 1)))
+;; ==============
+;; > Equivalence Classes
+;;   problem/98
+;; solution 1
+(fn [f d]
+  (->> (reduce #(let [res (f %2)]
+                  (if (nil? (get %1 res))
+                    (assoc %1 res #{%2})
+                    (assoc %1 res (conj (get %1  res) %2)))) {} d)
+       vals
+       (into #{})))
+;; solution 2
+(fn [f d]
+  (->> (group-by f d)
+       vals
+       (map set)
+       set))
+;; ==============
+;;
+;; 25 Aug 22
+;;
+;; ==============
+;; > Sequence Reductions
+;;   problem/60
+;; solution 1
+(fn
+  ([f x] (lazy-seq (map #(reduce f (first x) (take (inc %) x)) (range))))
+  ([f x y] (lazy-seq (map #(reduce f x (take % y)) (range (inc (count y)))))))
+;; ==============
+;; > Merge with a Function
+;;   problem/69
+;;   Special Restrictions
+;;   merge-with
+;; solution 1
+(fn [f & v]
+  (let [ky (keys (into {} (merge v)))]
+   (->> (map (fn [x] (map #(get % x) v)) ky)
+        (map (fn [x] (filter #(false? (nil? %)) x)))
+        (map (fn [x] (if (= (count x) 1) (identity (first x)) (apply f x))))
+        (map-indexed (fn [idx itm] {(nth ky idx) itm}))
+        (into {}))))
+;; ==============
+;; > The Balance of N
+;;   problem/115
+;; solution 1
+(fn [x]
+  (if (< (count (str x)) 2)
+    true 
+    (->> (str x)
+       (map #(Integer/parseInt (str %)))
+       ((fn [y] (= (apply + (take (quot (count (str x)) 2) y)) 
+                   (apply + (take-last (quot (count (str x)) 2) y))))))))
