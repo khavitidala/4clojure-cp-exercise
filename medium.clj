@@ -323,3 +323,17 @@
        (map #(Integer/parseInt (str %)))
        ((fn [y] (= (apply + (take (quot (count (str x)) 2) y)) 
                    (apply + (take-last (quot (count (str x)) 2) y))))))))
+;; ==============
+;;
+;; 26 Aug 22
+;;
+;; ==============
+;; > Power Set
+;;   problem/85
+;; solution 1
+(fn [items]
+  (reduce
+   (fn [s x]
+     (clojure.set/union s (map #(conj % x) s)))
+   (hash-set #{})
+   items))
