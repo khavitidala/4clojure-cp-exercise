@@ -427,3 +427,13 @@
     (if (zero? bil)
       res
       (recur (quot bil y) (conj res (rem bil y))))))))
+;; ==============
+;; > The Big Divide
+;;   problem/148
+;; solution 1
+(fn [x a b]
+  (let [deret (fn [m]
+                (/ (*' (quot (dec x) m) (+' m (*' m (quot (dec x) m)))) 2))]
+    (if (and (< x a) (< x b))
+      0
+      (-' (+' (deret a) (deret b)) (deret (*' a b))))))
