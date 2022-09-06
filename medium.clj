@@ -411,3 +411,19 @@
          ((fn [v] (map #(some (into #{} (first v)) %) (rest v))))
          (some nil?)
          nil?)))
+;; ==============
+;;
+;; 6 Sep 22
+;;
+;; ==============
+;; > Digits and bases
+;;   problem/137
+;; solution 1
+(fn [x y]
+  (if (< x y)
+    [0]
+   (reverse (loop [bil x
+         res []]
+    (if (zero? bil)
+      res
+      (recur (quot bil y) (conj res (rem bil y))))))))
