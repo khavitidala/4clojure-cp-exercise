@@ -337,3 +337,77 @@
      (clojure.set/union s (map #(conj % x) s)))
    (hash-set #{})
    items))
+;; ==============
+;;
+;; 27 Aug 22
+;;
+;; ==============
+;; > Identify keys and values
+;;   problem/105
+;; solution 1
+(fn [x]
+  (if (empty? x)
+    {}
+    (loop [res {}
+           y (first x)
+           z (rest x)]
+      (if (nil? y)
+        res
+        (if (keyword? y)
+          (recur (assoc res y []) (first z) (rest z))
+          (recur
+           (assoc
+            res
+            (last (keys res))
+            (if (empty? (get res (last (keys res))))
+              [y]
+              (conj (get res (last (keys res))) y))) (first z) (rest z)))))))
+;; ==============
+;;
+;; 28 Aug 22
+;;
+;; ==============
+;; > Prime Sandwich
+;;   problem/116
+;; solution 1
+(fn [x]
+  (let [genpr (fn [x]
+                (reduce
+                 (fn [primes number]
+                   (if (some zero? (map (partial mod number) primes))
+                     primes
+                     (conj primes number)))
+                 [2]
+                 (if (< x 100)
+                   (range 3 (* x x))
+                   (range 3 (+ x 100)))))
+        respr (if (> x 4) (genpr x) '())]
+    (if (> x 4)
+      (->> respr
+           (keep-indexed #(if (= %2 x)
+                            (list %2 (nth respr (dec %1)) (nth respr (inc %1)))
+                            nil))
+           flatten
+           (#(if (< (count %) 3) false (= (first %) (quot (apply + (rest %)) 2)))))
+      false)))
+;; ==============
+;;
+;; 29 Aug 22
+;;
+;; ==============
+;; > Sum Some Set Subsets
+;;   problem/131
+;; solution 1
+(fn [& x]
+  (let [ps (fn [items]
+             (reduce
+              (fn [s x]
+                (clojure.set/union s (map #(conj % x) s)))
+              (hash-set #{})
+              items))]
+    (->> (map #(ps %) x)
+         (map (fn [v] (filter #(not (empty? %)) v)))
+         (map (fn [v] (map #(apply + %) v)))
+         ((fn [v] (map #(some (into #{} (first v)) %) (rest v))))
+         (some nil?)
+         nil?)))
