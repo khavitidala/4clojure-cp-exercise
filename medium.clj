@@ -437,3 +437,19 @@
     (if (and (< x a) (< x b))
       0
       (-' (+' (deret a) (deret b)) (deret (*' a b))))))
+;; ==============
+;;
+;; 7 Sep 22
+;;
+;; ==============
+;; > Black Box Testing
+;;   problem/65
+;; solution 1
+(fn [x]
+  (let [ev (str (first (str x)))]
+   (cond
+     (= ev "(") :list 
+     (= ev "[") :vector
+     (= ev "#") :set
+     (= ev "{") :map
+     :else :not-col)))
